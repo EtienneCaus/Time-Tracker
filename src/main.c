@@ -7,7 +7,7 @@
 #include <unistd.h>
 
 #define gotoxy(x,y) printf("\033[%d;%dH", (y), (x))
-#define MAX 256
+#define MAX 1024
 
 struct termios info;    //Used to take keystrokes immediately
 struct winsize w;   //Used to see terminal size
@@ -124,6 +124,12 @@ int main(int argc, char const *argv[])
                         printscreen();
                     }  
                     break;
+                case 'H':
+                    cursor[0] = 9;      //Put the cursor at the start of the line
+                    gotoxy(cursor[0],cursor[1]);
+                    if(cursor[1]!=bottomline)
+                        printf("\033[1A"); // Move up 1 column
+                    break;
                 case 'F':   //End Key, set the cursor to the end of file
                     athome = 1;
                     printf("\033[2J"); //Clears the screen
@@ -137,16 +143,52 @@ int main(int argc, char const *argv[])
                     cursor[1]=bottomline; //Put the cursor at the end of the file!
                     gotoxy(0,cursor[1]);
                     for(int x=0; x<MAX; x++)    //Redraw the line
-                        printf("%c" , file[cursor[1]][x]);
-                    //printf("%s" , timer); // Print the timer  
+                        printf("%c" , file[cursor[1]][x]);  
                     gotoxy(cursor[0],cursor[1]);            
+                    break;
+                case '2': //Insert key
+                    getchar();
+
+                    for(int x=MAX-2; x>cursor[0]; x--)
+                        file[cursor[1]][x] = file[cursor[1]][x-1];
+                    file[cursor[1]][cursor[0]] = '~';
+
+                    printf("\033[2K"); //Clears the line
+                    gotoxy(0,cursor[1]);
+
+                    if(cursor[1]!=bottomline)
+                        printf("\033[1A"); // Move up 1 column
+
+                    for(int x=0; x<MAX; x++)    //Redraw the line
+                        printf("%c" , file[cursor[1]][x]);
+                    
+                    gotoxy(cursor[0],cursor[1]); 
+                    if(cursor[1]!=bottomline)
+                        printf("\033[1A"); // Move up 1 column
+                    break;
                     break;
                 case '3':   //Delete Key
                     getchar();
-                    ch = ' ';
-                    printf("%c", ch);   //deletes the char (like the spacebar)                   
-                    file[cursor[1]][cursor[0]] = ch;
-                    cursor[0]++;
+
+                    for(int x=cursor[0]; x<MAX-1; x++)
+                    {
+                        if(x==MAX-2)
+                            file[cursor[1]][x] = 0;
+                        else
+                            file[cursor[1]][x] = file[cursor[1]][x+1];
+                    }
+                    printf("\033[2K"); //Clears the line
+                    gotoxy(0,cursor[1]);
+
+                    if(cursor[1]!=bottomline)
+                        printf("\033[1A"); // Move up 1 column
+
+                    for(int x=0; x<MAX; x++)    //Redraw the line
+                        printf("%c" , file[cursor[1]][x]);
+                    
+                    gotoxy(cursor[0],cursor[1]); 
+                    if(cursor[1]!=bottomline)
+                        printf("\033[1A"); // Move up 1 column
                     break;
                 case 27:     //Escape Key (x3), ends the program
                     run=0;
@@ -228,6 +270,28 @@ int main(int argc, char const *argv[])
                     bottomline=cursor[1];
                 }
             }
+            else if(cursor[1]<bottomline-1)
+            {
+                for(int y=MAX-1; y>cursor[1]+1; y--)  //Insert a new line
+                    for(int x=0; x<MAX; x++)
+                        file[y][x] = file[y-1][x];
+
+                cursor[1]++;
+                bottomline++;
+
+                for(int x=0;x<8; x++)
+                    file[cursor[1]][x]= ' ';
+                file[cursor[1]][6]=file[cursor[1]-1][6];
+                for(int x=8;x<MAX-1;x++)
+                    file[cursor[1]][x] =  0;             
+
+                printf("\033[2J"); //Redraws the screen
+                printscreen();
+
+                cursor[0] = 9;      //Put the cursor at the start of the line
+                gotoxy(cursor[0],cursor[1]);
+                printf("\033[1A"); // Move up 1 column
+            }
         }
         else if(ch == '\t') //Change the color when tab is pressed
         {             
@@ -265,7 +329,6 @@ int main(int argc, char const *argv[])
             }
 
             gotoxy(0,cursor[1]);
-
             if(cursor[1]!=bottomline)
                 printf("\033[1A"); // Move up 1 column
 
@@ -274,15 +337,14 @@ int main(int argc, char const *argv[])
                 printf("%c" , file[cursor[1]][x]);
 
             gotoxy(7,cursor[1]);    //Set the color in the textfile
-
             if(cursor[1]!=bottomline)
                 printf("\033[1A"); // Move up 1 column
 
             printf("%c", symbol);
             file[cursor[1]][6] = symbol;    //Change the symbol of the line
             timer[6] = symbol;
-            gotoxy(cursor[0],cursor[1]); 
 
+            gotoxy(cursor[0],cursor[1]); 
             if(cursor[1]!=bottomline)
                 printf("\033[1A"); // Move up 1 column
         }
@@ -297,7 +359,7 @@ int main(int argc, char const *argv[])
     printf("\033[2J"); //Clears the screen
 
     //Saves the entire document
-    freopen("RAM","a",stdout);  //write in the file
+    freopen("ttrack.txt","a",stdout);  //write in the file
 
     printf("\n\n");   //Jumps two lines
     printf(originalTime);//Prints the original time
