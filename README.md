@@ -1,11 +1,9 @@
-Little program entirely made in C
+Simple text editor entirely written in C
 
-This simple program tracks the time of each lines, 
-usefull to keep track of your time
+Tracks the time of each lines, usefull to keep track of your time
 
-Press the "ESC" key three times to exit the program; saves in a file called "RAM"
+![image](https://github.com/user-attachments/assets/fc885bce-cf97-4158-895f-249327fdbea1)
 
-
-![image](https://github.com/user-attachments/assets/fd63cc33-e9e4-47b4-ba5c-b05b94e69233)
+v1.1 : Added the ability to insert or delete characters, as well as inserting new lines in the middle of the file
 
 v1.0 : Simple text editing, can also change the colour of each lines
