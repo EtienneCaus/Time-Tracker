@@ -20,8 +20,12 @@ void printscreen()
 {
     gotoxy(0,0);
 
-    for(int y=(w.ws_col-cursor[1] < 0) ? cursor[1]-w.ws_col +1 : 1; y<=cursor[1]; y++)
+    for(int y=(w.ws_row-cursor[1] < 0) ? cursor[1]-w.ws_row +1 : 1; y<=cursor[1]; y++)
     {
+        for(int x=MAX-3; x>8; x--)  //Puts "spaces" instead of char 0
+            if(file[y][x] == 0 && file[y][x+1] != 0)
+                file[y][x] = ' ';
+
         switch(file[y][6])
             {
                 case ':' :  //Change the line to Normal
@@ -74,6 +78,7 @@ int main(int argc, char const *argv[])
 
     //Set the timer
     char timer[]= "00:00 : ";
+    char currenttime[]= "00:00";
     struct tm* ptr;
     time_t t;
     t = time(NULL);
@@ -138,13 +143,16 @@ int main(int argc, char const *argv[])
                     t = time(NULL); //get the time again
                     ptr = localtime(&t);
                     for(int x=11;x<16;x++) timer[x-11] = asctime(ptr)[x]; //Set the time
+                    for(int x=11;x<16;x++) currenttime[x-11] = asctime(ptr)[x];
 
                     cursor[0]=9;
                     cursor[1]=bottomline; //Put the cursor at the end of the file!
                     gotoxy(0,cursor[1]);
                     for(int x=0; x<MAX; x++)    //Redraw the line
-                        printf("%c" , file[cursor[1]][x]);  
-                    gotoxy(cursor[0],cursor[1]);            
+                        printf("%c" , file[cursor[1]][x]);
+                    gotoxy(0,w.ws_row); //Moves to the bottom of the screen
+                    printf("%s" , currenttime);//Goes to the next line
+                    gotoxy(cursor[0],cursor[1]);
                     break;
                 case '2': //Insert key
                     getchar();
@@ -353,7 +361,7 @@ int main(int argc, char const *argv[])
             printf("%c", ch);   //Prints the character
             file[cursor[1]][cursor[0]] = ch;
             cursor[0]++;
-        } 
+        }
     }
 
     printf("\033[2J"); //Clears the screen
