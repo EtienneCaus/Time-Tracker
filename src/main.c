@@ -174,7 +174,6 @@ int main(int argc, char const *argv[])
                     if(cursor[1]!=bottomline)
                         printf("\033[1A"); // Move up 1 column
                     break;
-                    break;
                 case '3':   //Delete Key
                     getchar();
 
