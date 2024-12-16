@@ -117,6 +117,10 @@ int main(int argc, char const *argv[])
                         cursor[1]--;
                         file[cursor[1]][6] = symbol;    //Change the symbol of the line on top                                 
                         printscreen();
+
+                        for(int x=MAX-3; x>8; x--)  //Puts the Cursor at the end of the line
+                            if(file[cursor[1]][x] == 0)
+                                cursor[0] = x;
                     }
                     break;
                 case '6'://Page Down
@@ -127,9 +131,13 @@ int main(int argc, char const *argv[])
                         cursor[1]++;
                         file[cursor[1]][6] = symbol;    //Change the symbol of the line bellow
                         printscreen();
+
+                        for(int x=MAX-3; x>8; x--)  //Puts the Cursor at the end of the line
+                            if(file[cursor[1]][x] == 0)
+                                cursor[0] = x;
                     }  
                     break;
-                case 'H':
+                case 'H':   //Home key
                     cursor[0] = 9;      //Put the cursor at the start of the line
                     gotoxy(cursor[0],cursor[1]);
                     if(cursor[1]!=bottomline)
@@ -146,6 +154,11 @@ int main(int argc, char const *argv[])
 
                     cursor[0]=9;
                     cursor[1]=bottomline; //Put the cursor at the end of the file!
+
+                    for(int x=MAX-3; x>8; x--)  //Puts the Cursor at the end of the line
+                        if(file[cursor[1]][x] == 0)
+                            cursor[0] = x;
+                    
                     gotoxy(0,cursor[1]);
                     for(int x=0; x<MAX; x++)    //Redraw the line
                         printf("%c" , file[cursor[1]][x]);
@@ -205,8 +218,20 @@ int main(int argc, char const *argv[])
                             printf("\033[2J"); //Clears the screen
                         athome=0;
 
-                        cursor[1]--;                                        
+                        if(cursor[1] != bottomline)
+                        {
+                            gotoxy(0,cursor[1]-1);
+                            printf("\033[2K"); //Clears the line 
+                            for(int x=0; x<MAX; x++)    //Redraw the line
+                                printf("%c" , file[cursor[1]][x]);
+                        }
+
+                        cursor[1]--;                               
                         printscreen();
+
+                        for(int x=MAX-3; x>8; x--)  //Puts the Cursor at the end of the line
+                            if(file[cursor[1]][x] == 0)
+                                cursor[0] = x;
                     }
                     break;
                 case 'B':
@@ -217,16 +242,32 @@ int main(int argc, char const *argv[])
                             printf("\033[2J"); //Clears the screen
                         athome=0;
 
+                        gotoxy(0,cursor[1]-1);
+                        printf("\033[2K"); //Clears the line 
+                        for(int x=0; x<MAX; x++)    //Redraw the line
+                            printf("%c" , file[cursor[1]][x]);
+
                         cursor[1]++;            
                         printscreen();
+
+                        for(int x=MAX-3; x>8; x--)  //Puts the Cursor at the end of the line
+                            if(file[cursor[1]][x] == 0)
+                                cursor[0] = x;
                     }                   
                     break;
                 case 'C':
                     // code for arrow right
                     if(cursor[0] < MAX)
                     {
-                        printf("\033[1C"); // Move right X column;
-                        cursor[0]++;
+                        int endline;
+                        for(int x=MAX-3; x>8; x--)  //Check the end of the line
+                            if(file[cursor[1]][x] == 0)
+                                endline = x;
+                        if(cursor[0] < endline)
+                        {
+                            printf("\033[1C"); // Move right X column;
+                            cursor[0]++;
+                        }
                     }
                     break;
                 case 'D':
@@ -362,10 +403,27 @@ int main(int argc, char const *argv[])
         ptr = localtime(&t); //Set the time
         for(int x=11;x<16;x++) currenttime[x-11] = asctime(ptr)[x];
         gotoxy(0,w.ws_row); //Moves to the bottom of the screen
-        printf("%s" , currenttime);//Goes to the next line
-        gotoxy(cursor[0],cursor[1]);
+        printf("%s" , currenttime);//Goes to the next line            
         if(cursor[1]!=bottomline)
-                printf("\033[1A"); // Move up 1 column
+        {
+            gotoxy(0,cursor[1]);
+            printf("\033[1A"); // Move up 1 column
+            for(int x=0; x<=cursor[0]; x++)    //Redraw the line
+                printf("%c" , file[cursor[1]][x]);
+
+            int endline;
+            for(int x=MAX-3; x>8; x--)  //Check the end of the line
+                if(file[cursor[1]][x] == 0)
+                    endline = x;
+            if(cursor[0] < endline)
+                printf("\033[1D"); // Move left 1 column
+        }
+        else
+        {
+            gotoxy(9,cursor[1]);
+            for(int x=9; x<cursor[0]; x++)    //Redraw the line
+                printf("%c" , file[cursor[1]][x]);
+        }
     }
 
     printf("\033[2J"); //Clears the screen
