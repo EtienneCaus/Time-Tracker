@@ -189,6 +189,7 @@ int main(int argc, char const *argv[])
                     if(athome)
                     {
                         gotoxy(0,cursor[1]);
+                        printf("\033[2K"); //Clears the line 
                         for(int x=0; x<MAX-1; x++)    //Redraw the line
                             printf("%c" , file[cursor[1]][x]);
                     }
@@ -210,6 +211,7 @@ int main(int argc, char const *argv[])
                     if(athome)
                     {
                         gotoxy(0,cursor[1]);
+                        printf("\033[2K"); //Clears the line 
                         for(int x=0; x<MAX-1; x++)    //Redraw the line
                             printf("%c" , file[cursor[1]][x]);
                     }
