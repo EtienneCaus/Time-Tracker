@@ -61,6 +61,7 @@ void printscreen()
     }
     gotoxy(0,0);
 
+    printf("\033[2K"); //Clears the line 
     t = time(NULL);
     ptr = localtime(&t);
     printf(asctime(ptr)); //Prints the time at the top of the screen again
@@ -184,11 +185,13 @@ int main(int argc, char const *argv[])
                         file[cursor[1]][x] = file[cursor[1]][x-1];
                     file[cursor[1]][cursor[0]] = ' ';
 
-                    printf("\033[2K"); //Clears the line
-                    gotoxy(0,cursor[1]);
-
-                    for(int x=0; x<MAX; x++)    //Redraw the line
-                        printf("%c" , file[cursor[1]][x]);
+                    printscreen();
+                    if(athome)
+                    {
+                        gotoxy(0,cursor[1]);
+                        for(int x=0; x<MAX-1; x++)    //Redraw the line
+                            printf("%c" , file[cursor[1]][x]);
+                    }
                     
                     gotoxy(cursor[0],cursor[1]);
                     break;
@@ -202,11 +205,14 @@ int main(int argc, char const *argv[])
                         else
                             file[cursor[1]][x] = file[cursor[1]][x+1];
                     }
-                    printf("\033[2K"); //Clears the line
-                    gotoxy(0,cursor[1]);
 
-                    for(int x=0; x<MAX; x++)    //Redraw the line
-                        printf("%c" , file[cursor[1]][x]);
+                    printscreen();
+                    if(athome)
+                    {
+                        gotoxy(0,cursor[1]);
+                        for(int x=0; x<MAX-1; x++)    //Redraw the line
+                            printf("%c" , file[cursor[1]][x]);
+                    }
                     
                     gotoxy(cursor[0],cursor[1]); 
                     break;
@@ -313,7 +319,7 @@ int main(int argc, char const *argv[])
                 
                 if(cursor[1]>=bottomline)
                 {
-                    for(int x=0;x<9;x++)    //Write the time down again on the next line
+                    for(int x=0;x<8;x++)    //Write the time down again on the next line
                         file[cursor[1]][x] = ' ';
                     file[cursor[1]][6] = timer[6];
                     bottomline=cursor[1];
@@ -341,12 +347,9 @@ int main(int argc, char const *argv[])
             }
             else if(cursor[1]<bottomline)
             {
-                if(cursor[1]!=bottomline-1)
-                {
-                    for(int y=MAX-1; y>cursor[1]+1; y--)  //Insert a new line
-                        for(int x=0; x<MAX; x++)
-                            file[y][x] = file[y-1][x];
-                }
+                for(int y=MAX-1; y>cursor[1]+1; y--)  //Insert a new line
+                    for(int x=0; x<MAX; x++)
+                        file[y][x] = file[y-1][x];
 
                 cursor[1]++;
                 bottomline++;
