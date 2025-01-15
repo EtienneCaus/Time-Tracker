@@ -21,6 +21,13 @@ void printscreen()
 {
     gotoxy(0,0);
 
+    //Prints the time at the top of the screen
+    struct tm* ptr;
+    time_t t;
+    t = time(NULL);
+    ptr = localtime(&t);
+    printf(asctime(ptr));
+
     for(int y=(w.ws_row-cursor[1] < 0) ? cursor[1]-w.ws_row +1 : 1; y<=cursor[1] && y<bottomline; y++)
     {
         for(int x=MAX-3; x>8; x--)  //Puts "spaces" instead of char 0
@@ -52,6 +59,12 @@ void printscreen()
         for(int x=0; x<MAX; x++)    //Redraw the line
             printf("%c" , file[y][x]);
     }
+    gotoxy(0,0);
+
+    t = time(NULL);
+    ptr = localtime(&t);
+    printf(asctime(ptr)); //Prints the time at the top of the screen again
+
     gotoxy(0,cursor[1]);
     gotoxy(cursor[0],cursor[1]);
     printf("\033[1A"); //Moves the cursor up
@@ -97,6 +110,7 @@ int main(int argc, char const *argv[])
     gotoxy(0,0);
     printf(asctime(ptr));
     printf("%s" , timer); // Print the first timer
+    file[0][0] = '\n';
 
     while(run)
     {
@@ -168,20 +182,15 @@ int main(int argc, char const *argv[])
 
                     for(int x=MAX-2; x>cursor[0]; x--)
                         file[cursor[1]][x] = file[cursor[1]][x-1];
-                    file[cursor[1]][cursor[0]] = '~';
+                    file[cursor[1]][cursor[0]] = ' ';
 
                     printf("\033[2K"); //Clears the line
                     gotoxy(0,cursor[1]);
 
-                    if(cursor[1]!=bottomline)
-                        printf("\033[1A"); // Move up 1 column
-
                     for(int x=0; x<MAX; x++)    //Redraw the line
                         printf("%c" , file[cursor[1]][x]);
                     
-                    gotoxy(cursor[0],cursor[1]); 
-                    if(cursor[1]!=bottomline)
-                        printf("\033[1A"); // Move up 1 column
+                    gotoxy(cursor[0],cursor[1]);
                     break;
                 case '3':   //Delete Key
                     getchar();
@@ -196,15 +205,10 @@ int main(int argc, char const *argv[])
                     printf("\033[2K"); //Clears the line
                     gotoxy(0,cursor[1]);
 
-                    if(cursor[1]!=bottomline)
-                        printf("\033[1A"); // Move up 1 column
-
                     for(int x=0; x<MAX; x++)    //Redraw the line
                         printf("%c" , file[cursor[1]][x]);
                     
                     gotoxy(cursor[0],cursor[1]); 
-                    if(cursor[1]!=bottomline)
-                        printf("\033[1A"); // Move up 1 column
                     break;
                 case 27:     //Escape Key (x3), ends the program
                     run=0;
@@ -310,15 +314,39 @@ int main(int argc, char const *argv[])
                 if(cursor[1]>=bottomline)
                 {
                     for(int x=0;x<9;x++)    //Write the time down again on the next line
-                        file[cursor[1]][x] = timer[x];
+                        file[cursor[1]][x] = ' ';
+                    file[cursor[1]][6] = timer[6];
                     bottomline=cursor[1];
                 }
+
+                if(cursor[1] == bottomline)
+                {
+                    //athome = 1;
+                    printf("\033[2J"); //Clears the screen
+                    printscreen();
+
+                    cursor[0]=9;
+                    cursor[1]=bottomline; //Put the cursor at the end of the file!
+
+                    printf("\n");
+
+                    for(int x=MAX-3; x>8; x--)  //Puts the Cursor at the end of the line
+                        if(file[cursor[1]][x] == 0)
+                            cursor[0] = x;
+                    
+                    gotoxy(0,cursor[1]);
+                    for(int x=0; x<MAX; x++)    //Redraw the line
+                        printf("%c" , file[cursor[1]][x]);
+                }
             }
-            else if(cursor[1]<bottomline-1)
+            else if(cursor[1]<bottomline)
             {
-                for(int y=MAX-1; y>cursor[1]+1; y--)  //Insert a new line
-                    for(int x=0; x<MAX; x++)
-                        file[y][x] = file[y-1][x];
+                if(cursor[1]!=bottomline-1)
+                {
+                    for(int y=MAX-1; y>cursor[1]+1; y--)  //Insert a new line
+                        for(int x=0; x<MAX; x++)
+                            file[y][x] = file[y-1][x];
+                }
 
                 cursor[1]++;
                 bottomline++;
@@ -327,7 +355,9 @@ int main(int argc, char const *argv[])
                     file[cursor[1]][x]= ' ';
                 file[cursor[1]][6]=file[cursor[1]-1][6];
                 for(int x=8;x<MAX-1;x++)
-                    file[cursor[1]][x] =  0;             
+                    file[cursor[1]][x] =  0;   
+
+                file[cursor[1]][MAX-1] = ch; //set the last char to "\n"          
 
                 printf("\033[2J"); //Redraws the screen
                 printscreen();
@@ -373,24 +403,16 @@ int main(int argc, char const *argv[])
             }
 
             gotoxy(0,cursor[1]);
-            if(cursor[1]!=bottomline)
-                printf("\033[1A"); // Move up 1 column
-
+            
             printf("\033[%sm", action); //Change the color
-            for(int x=0; x<MAX; x++)    //Redraw the line
-                printf("%c" , file[cursor[1]][x]);
 
             gotoxy(7,cursor[1]);    //Set the color in the textfile
-            if(cursor[1]!=bottomline)
-                printf("\033[1A"); // Move up 1 column
 
             printf("%c", symbol);
             file[cursor[1]][6] = symbol;    //Change the symbol of the line
             timer[6] = symbol;
 
-            gotoxy(cursor[0],cursor[1]); 
-            if(cursor[1]!=bottomline)
-                printf("\033[1A"); // Move up 1 column
+            gotoxy(cursor[0],cursor[1]);
         }
         else
         {
@@ -406,7 +428,7 @@ int main(int argc, char const *argv[])
         printf("%s" , currenttime);//Goes to the next line            
         if(cursor[1]!=bottomline)
         {
-            gotoxy(0,cursor[1]);
+            gotoxy(0,cursor[1]+1);
             printf("\033[1A"); // Move up 1 column
             for(int x=0; x<=cursor[0]; x++)    //Redraw the line
                 printf("%c" , file[cursor[1]][x]);
@@ -420,6 +442,8 @@ int main(int argc, char const *argv[])
         }
         else
         {
+            gotoxy(7,cursor[1]);
+                printf("%c" , file[cursor[1]][6]);
             gotoxy(9,cursor[1]);
             for(int x=9; x<cursor[0]; x++)    //Redraw the line
                 printf("%c" , file[cursor[1]][x]);
