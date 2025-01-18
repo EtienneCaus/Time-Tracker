@@ -426,11 +426,16 @@ int main(int argc, char const *argv[])
             cursor[0]++;
         }
 
-        t = time(NULL); //get the time again
-        ptr = localtime(&t); //Set the time
-        for(int x=11;x<16;x++) currenttime[x-11] = asctime(ptr)[x];
-        gotoxy(0,w.ws_row); //Moves to the bottom of the screen
-        printf("%s" , currenttime);//Goes to the next line            
+        if(athome)  //Write down the time if AT HOME
+        {
+            t = time(NULL); //get the time again
+            ptr = localtime(&t); //Set the time
+            for(int x=11;x<16;x++) currenttime[x-11] = asctime(ptr)[x];
+            //gotoxy(0,w.ws_row); //Moves to the bottom of the screen
+            gotoxy(0,cursor[1]); //Moves to home
+            printf("%s" , currenttime);//Goes to the next line   
+        }
+                 
         if(cursor[1]!=bottomline)
         {
             gotoxy(0,cursor[1]+1);
