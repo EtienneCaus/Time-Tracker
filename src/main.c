@@ -5,6 +5,7 @@
 #include <wchar.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
+#include <pthread.h>
 
 #define gotoxy(x,y) printf("\033[%d;%dH", (y), (x))
 #define MAX 1024
@@ -16,6 +17,29 @@ struct winsize w;   //Used to see terminal size
 unsigned char file[MAX][MAX];
 int cursor[]={9,2};
 int bottomline=2;
+
+int run=1;  //variable used to check if program is running or not
+
+void* printClock(void* vargp)
+{
+    struct tm* ptr;
+    time_t t;
+
+    while(run)
+    {
+        t = time(NULL);
+        ptr = localtime(&t);
+
+        gotoxy(0,0);    //Go to the top of the scree
+        printf(asctime(ptr)); //Write down the time
+        gotoxy(9,cursor[1]);    //Go to the cursor
+        for(int x=9; x<cursor[0]; x++)    //Redraw the current line
+            printf("%c" , file[cursor[1]][x]);
+        fflush(stdout);
+
+        sleep(1);
+    }
+}
 
 void printscreen()
 {
@@ -80,6 +104,11 @@ int main(int argc, char const *argv[])
     info.c_cc[VTIME] = 0;         /* no timeout */
     tcsetattr(0, TCSANOW, &info); /* set immediately */  
 
+    //Prints the clock at the top of the screen
+    pthread_t thread_id;
+    pthread_create(&thread_id, NULL, printClock, NULL);
+    //pthread_join(thread_id, NULL);
+
     //Fills the "file" variable with 0's
     for(int y=0;y<MAX;y++)
         for(int x=0;x<MAX;x++)
@@ -88,7 +117,6 @@ int main(int argc, char const *argv[])
     //Defines the buffer
     unsigned char ch;
     int athome=1;
-    int run=1;
 
     //Set the timer
     char timer[]= "00:00 : ";
