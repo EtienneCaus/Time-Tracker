@@ -57,6 +57,7 @@ void printscreen()
 
     for(int y=(w.ws_row-cursor[1] < 0) ? cursor[1]-w.ws_row +1 : 1; y<=cursor[1] && y<bottomline; y++)
     {
+        gotoxy(0, y);
         for(int x=MAX-3; x>8; x--)  //Puts "spaces" instead of char 0
             if(file[y][x] == 0 && file[y][x+1] != 0)
                 file[y][x] = ' ';
@@ -83,7 +84,7 @@ void printscreen()
                     break;
             }
         printf("\033[2K"); //Clears the line 
-        for(int x=0; x<MAX; x++)    //Redraw the line
+        for(int x=0; x<w.ws_col; x++)    //Redraw the line
             printf("%c" , file[y][x]);
     }
     gotoxy(0,0);
