@@ -182,15 +182,17 @@ int main(int argc, char const *argv[])
                                 cursor[0] = x;
                     }  
                     break;
+                case '1':
+                    getchar();
                 case 'H':   //Home key
-                    fflush(stdin);
                     cursor[0] = 9;      //Put the cursor at the start of the line
                     gotoxy(cursor[0],cursor[1]);
                     if(cursor[1]!=bottomline)
                         printf("\033[1A"); // Move up 1 column
                     break;
+                case '4':
+                    getchar();
                 case 'F':   //End Key, set the cursor to the end of file
-                    fflush(stdin);
                     athome = 1;
                     printf("\033[2J"); //Clears the screen
                     printscreen();
