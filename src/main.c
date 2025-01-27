@@ -19,6 +19,7 @@ int cursor[]={9,2};
 int bottomline=2;
 
 int run=1;  //variable used to check if program is running or not
+int athome=1;
 
 void* printClock(void* vargp)
 {
@@ -33,6 +34,8 @@ void* printClock(void* vargp)
         gotoxy(0,0);    //Go to the top of the scree
         printf(asctime(ptr)); //Write down the time
         gotoxy(9,cursor[1]);    //Go to the cursor
+        if(!athome && cursor[1] >= w.ws_row)
+            printf("\033[1A"); //Moves the cursor up
         for(int x=9; x<cursor[0]; x++)    //Redraw the current line
             printf("%c" , file[cursor[1]][x]);
         fflush(stdout);
@@ -116,7 +119,6 @@ int main(int argc, char const *argv[])
 
     //Defines the buffer
     unsigned char ch;
-    int athome=1;
 
     //Set the timer
     char timer[]= "00:00 : ";
@@ -181,12 +183,14 @@ int main(int argc, char const *argv[])
                     }  
                     break;
                 case 'H':   //Home key
+                    fflush(stdin);
                     cursor[0] = 9;      //Put the cursor at the start of the line
                     gotoxy(cursor[0],cursor[1]);
                     if(cursor[1]!=bottomline)
                         printf("\033[1A"); // Move up 1 column
                     break;
                 case 'F':   //End Key, set the cursor to the end of file
+                    fflush(stdin);
                     athome = 1;
                     printf("\033[2J"); //Clears the screen
                     printscreen();
@@ -203,6 +207,7 @@ int main(int argc, char const *argv[])
                             cursor[0] = x;
                     
                     gotoxy(0,cursor[1]);
+                    //gotoxy(0,w.ws_row); //Go to the end of the screen
                     for(int x=0; x<MAX; x++)    //Redraw the line
                         printf("%c" , file[cursor[1]][x]);
                     break;
